@@ -30,7 +30,7 @@
     </light>
 
     <!-- Martian Gravity-->
-    <gravity>0 0 0</gravity>
+    <gravity>0 0 -3.711</gravity>
 
     <include>
       <uri>model://ingenuity_helicopter</uri>
