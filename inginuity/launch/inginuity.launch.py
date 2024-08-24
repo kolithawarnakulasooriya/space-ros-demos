@@ -30,6 +30,11 @@ def generate_launch_description():
         shell=True
     )
 
+    propellers_node = Node(
+        package="inginuity",
+        executable="propellors.py"
+    )
+
     spawn = Node(
         package='ros_ign_gazebo', executable='create',
         arguments=[
@@ -40,16 +45,52 @@ def generate_launch_description():
         output='screen' 
     )
 
+    ros_gz_bridge = Node(
+            package='ros_gz_bridge',
+            executable='parameter_bridge',
+            arguments=[
+                '/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock',
+            ],
+            output='screen')
+
     robot_state_publisher = Node(
             package='robot_state_publisher',
             executable='robot_state_publisher',
             name='robot_state_publisher',
             output='screen',
             parameters=[robot_description])
+    
+    robot_joint_publisher = Node(
+            package='joint_state_publisher',
+            executable='joint_state_publisher',
+            name='joint_state_publisher',
+            output='screen',
+            parameters=[robot_description])
+
+    load_joint_state_broadcaster = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
+             'joint_state_broadcaster'],
+        output='screen'
+    )
+
+    load_propellor_velocity_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
+             'propellor_1_controller'],
+        output='screen'
+    )
 
     return LaunchDescription([
-        SetParameter(name='use_sim_time', value=True),
+        #SetParameter(name='use_sim_time', value=True),
         start_world,
         robot_state_publisher,
+        robot_joint_publisher,
         spawn,
+        propellers_node,
+        ros_gz_bridge,
+        RegisterEventHandler(
+            OnProcessExit(
+                target_action=load_joint_state_broadcaster,
+                on_exit=[load_propellor_velocity_controller],
+            )
+        ),
     ])
