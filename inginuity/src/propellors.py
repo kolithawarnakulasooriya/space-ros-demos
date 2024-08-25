@@ -4,20 +4,50 @@ import rclpy
 import rclpy.logging
 from rclpy.node import Node
 from std_msgs.msg import Float64MultiArray
+from std_srvs.srv import SetBool
+from std_srvs.srv._set_bool import SetBool_Request, SetBool_Response
 
 class PropellorNode(Node):
 
     def __init__(self):
         super().__init__('propellor_node')
         self.propellor_publisher = self.create_publisher(Float64MultiArray, '/propellor_controller/commands', 1)
-        timer_period = 0.5 
-        #self.timer = self.create_timer(timer_period, self.timer_callback)
-        self.v = 10.0
+        self.timer_period = 0.5 
+        self.timer = None
+        self.motor_speed = 1000.0
+
+        # Here define services
+        self.srv = self.create_service(SetBool, '/start_rotors', self.start_rotors)
+        self.srv = self.create_service(SetBool, '/stop_rotors', self.stop_rotors)
     
     def timer_callback(self):
+        self.publish_rotor_val([self.motor_speed, -self.motor_speed])
+
+    def publish_rotor_val(self, value):
         target_vel = Float64MultiArray()
-        target_vel.data = [self.v, -self.v]
+        target_vel.data = value
         self.propellor_publisher.publish(target_vel)
+
+    def start_rotors(self, request: SetBool_Request, response: SetBool_Response):
+
+        if self.timer:
+            return response
+        
+        self.timer = self.create_timer(self.timer_period, self.timer_callback)
+
+        return response
+    
+    def stop_rotors(self, request: SetBool_Request, response: SetBool_Response):
+        
+        if not self.timer:
+            return response
+        
+        self.timer.cancel()
+        self.timer.destroy()
+        self.timer = None
+        self.publish_rotor_val([0.0, 0.0])
+
+        return response
             
 
 def main(args=None):
