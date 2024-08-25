@@ -9,13 +9,14 @@ class PropellorNode(Node):
 
     def __init__(self):
         super().__init__('propellor_node')
-        self.propellor_publisher = self.create_publisher(Float64MultiArray, '/propellor_1_controller/commands', 1)
+        self.propellor_publisher = self.create_publisher(Float64MultiArray, '/propellor_controller/commands', 1)
         timer_period = 0.5 
-        self.timer = self.create_timer(timer_period, self.timer_callback)
+        #self.timer = self.create_timer(timer_period, self.timer_callback)
+        self.v = 10.0
     
     def timer_callback(self):
         target_vel = Float64MultiArray()
-        target_vel.data = [100.0]
+        target_vel.data = [self.v, -self.v]
         self.propellor_publisher.publish(target_vel)
             
 

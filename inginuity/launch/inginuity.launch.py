@@ -1,8 +1,9 @@
 from launch import LaunchDescription
 from os import environ, path
-from launch.actions import ExecuteProcess, RegisterEventHandler
+from launch.actions import ExecuteProcess, RegisterEventHandler, DeclareLaunchArgument
 from launch_ros.actions import SetParameter, Node
 from launch.event_handlers import OnProcessExit
+from launch.substitutions import LaunchConfiguration
 from ament_index_python.packages import get_package_share_directory
 import xacro
 
@@ -36,14 +37,17 @@ def generate_launch_description():
     )
 
     spawn = Node(
-        package='ros_ign_gazebo', executable='create',
+        package='ros_ign_gazebo',
+        executable='create',
         arguments=[
             '-name', 'inginuity_helicopter',
             '-topic', robot_description,
-            '-z', '-8.8'
+            '-z', '-8.8',
+            '-allow_renaming', 'true'
         ],
         output='screen' 
     )
+
 
     ros_gz_bridge = Node(
             package='ros_gz_bridge',
@@ -59,38 +63,45 @@ def generate_launch_description():
             name='robot_state_publisher',
             output='screen',
             parameters=[robot_description])
-    
-    robot_joint_publisher = Node(
-            package='joint_state_publisher',
-            executable='joint_state_publisher',
-            name='joint_state_publisher',
-            output='screen',
-            parameters=[robot_description])
 
-    load_joint_state_broadcaster = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
-             'joint_state_broadcaster'],
+    load_propellor_velocity_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller',
+             '--set-state', 'active', 'propellor_controller'],
         output='screen'
     )
 
-    load_propellor_velocity_controller = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
-             'propellor_1_controller'],
-        output='screen'
+    use_sim_time = LaunchConfiguration('use_sim_time', default=True)
+
+    component_state_msg = '{name: "IgnitionSystem", target_state: {id: 3, label: ""}}'
+
+    ## a hack to resolve current bug
+    set_hardware_interface_active = ExecuteProcess(
+        cmd=['ros2', 'service', 'call', 
+            'controller_manager/set_hardware_component_state',
+            'controller_manager_msgs/srv/SetHardwareComponentState',
+            component_state_msg]
     )
 
     return LaunchDescription([
-        #SetParameter(name='use_sim_time', value=True),
         start_world,
         robot_state_publisher,
-        robot_joint_publisher,
         spawn,
         propellers_node,
         ros_gz_bridge,
         RegisterEventHandler(
             OnProcessExit(
-                target_action=load_joint_state_broadcaster,
+                target_action=spawn,
+                on_exit=[set_hardware_interface_active],
+            )
+        ),
+        RegisterEventHandler(
+            OnProcessExit(
+                target_action=set_hardware_interface_active,
                 on_exit=[load_propellor_velocity_controller],
             )
         ),
+        DeclareLaunchArgument(
+            'use_sim_time',
+            default_value=use_sim_time,
+            description='If true, use simulated clock'),
     ])

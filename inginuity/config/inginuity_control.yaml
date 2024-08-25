@@ -2,11 +2,12 @@ controller_manager:
   ros__parameters:
     update_rate: 100
 
-    propellor_1_controller:
+    propellor_controller:
       type: velocity_controllers/JointGroupVelocityController
 
-propellor_1_controller:
+propellor_controller:
   ros__parameters:
     joints:
-      - helicopter_body_propellor_1
+      - body_propellor_up_joint
+      - body_propellor_down_joint
     interface_name: velocity
