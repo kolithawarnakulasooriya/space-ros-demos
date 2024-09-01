@@ -70,6 +70,12 @@ def generate_launch_description():
         output='screen'
     )
 
+    load_body_elevation_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller',
+             '--set-state', 'active', 'elevation_controller'],
+        output='screen'
+    )
+
     use_sim_time = LaunchConfiguration('use_sim_time', default=True)
 
     component_state_msg = '{name: "IgnitionSystem", target_state: {id: 3, label: ""}}'
@@ -97,7 +103,8 @@ def generate_launch_description():
         RegisterEventHandler(
             OnProcessExit(
                 target_action=set_hardware_interface_active,
-                on_exit=[load_propellor_velocity_controller],
+                on_exit=[load_propellor_velocity_controller,
+                         load_body_elevation_controller],
             )
         ),
         DeclareLaunchArgument(

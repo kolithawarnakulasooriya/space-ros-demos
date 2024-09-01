@@ -31,6 +31,7 @@ install(DIRECTORY
 
 install(PROGRAMS
   src/propellors.py
+  src/helicopter.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

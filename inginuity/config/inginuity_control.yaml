@@ -1,11 +1,21 @@
 controller_manager:
   ros__parameters:
-    update_rate: 100
+    update_rate: 1000
 
     propellor_controller:
       type: velocity_controllers/JointGroupVelocityController
 
+    elevation_controller:
+      type: velocity_controllers/JointGroupVelocityController
+
 propellor_controller:
+  ros__parameters:
+    joints:
+      - body_propellor_up_joint
+      - body_propellor_down_joint
+    interface_name: velocity
+
+elevation_controller:
   ros__parameters:
     joints:
       - body_propellor_up_joint
