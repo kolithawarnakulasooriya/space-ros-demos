@@ -53,7 +53,9 @@ def generate_launch_description():
             package='ros_gz_bridge',
             executable='parameter_bridge',
             arguments=[
-                '/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock',
+                '/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock]',
+                '/model/helicopter/odometry@nav_msgs/msg/Odometry@ignition.msgs.Odometry',
+                '/imu@sensor_msgs/msg/Imu@ignition.msgs.IMU',
             ],
             output='screen')
 

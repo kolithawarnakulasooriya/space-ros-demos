@@ -18,6 +18,5 @@ propellor_controller:
 elevation_controller:
   ros__parameters:
     joints:
-      - body_propellor_up_joint
-      - body_propellor_down_joint
+      - base_link_body_joint
     interface_name: velocity
