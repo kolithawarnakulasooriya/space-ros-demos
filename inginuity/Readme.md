@@ -1,4 +1,4 @@
-## Demo Simulation for NASA Ingenuity Mars Helicopter
+## Demo Simulation for NASA Ingenuity Mars Helicopter [Kolitha]
 
 This is a demo package for Ingenuity Mars Helicopter developed from (NASA)[https://science.nasa.gov/mission/mars-2020-perseverance/ingenuity-mars-helicopter/]. Basic UAV functions has been added with the Mars environment.
 
